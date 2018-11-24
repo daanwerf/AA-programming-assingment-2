@@ -3,11 +3,11 @@ import java.util.List;
 
 public class Schedule {
 	private List<Job> schedule;
-	private int startingTime;
-	private int totalProcessingTime;
-	private int tardiness;
+	private double startingTime;
+	private double totalProcessingTime;
+	private double tardiness;
 
-	public Schedule(int startingTime){
+	public Schedule(double startingTime){
 		this.schedule = new LinkedList<>();
 		this.startingTime = startingTime;
 		this.totalProcessingTime = 0;
@@ -28,19 +28,19 @@ public class Schedule {
 			updateTardiness();
 	}
 
-	public void setNewStartingTime(int startingTime) {
+	public void setNewStartingTime(double startingTime) {
 		this.startingTime = startingTime;
 
 		// Calculate the new tardiness with this different starting time
 		this.tardiness = 0;
-		int time = startingTime;
+		double time = startingTime;
 		for(int i = 0; i < schedule.size(); i++) {
 			time = time + schedule.get(i).getProcessingTime();
-			this.tardiness = this.tardiness + Integer.max(0, time - schedule.get(i).getDeadline());
+			this.tardiness = this.tardiness + Double.max(0, time - schedule.get(i).getDeadline());
 		}
 	}
 
-	public int getTardiness() {
+	public double getTardiness() {
 		return this.tardiness;
 	}
 
@@ -55,10 +55,10 @@ public class Schedule {
 	}
 
 	public void updateTardiness() {
-	    this.tardiness = Integer.max(0, this.totalProcessingTime - this.get(this.size() - 1).getDeadline());
+	    this.tardiness = Double.max(0, this.totalProcessingTime - this.get(this.size() - 1).getDeadline());
     }
 
-    public int getStartingTime() {
+    public double getStartingTime() {
 	    return this.startingTime;
     }
 

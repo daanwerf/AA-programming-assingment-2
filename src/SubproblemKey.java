@@ -1,9 +1,10 @@
 class SubproblemKey {
-    int startIndex, endIndex, startTime, length;
+    private JobList joblist;
+    private double startTime;
+    private int length;
 
-    SubproblemKey(int startIndex, int endIndex, int startTime, int length) {
-      this.startIndex = startIndex;
-      this.endIndex = endIndex;
+    SubproblemKey(JobList joblist, double startTime, int length) {
+      this.joblist = joblist;
       this.startTime = startTime;
       this.length = length;
     }
@@ -12,22 +13,22 @@ class SubproblemKey {
     public boolean equals(Object o) {
       if (!(o instanceof SubproblemKey)) return false;
       SubproblemKey other = (SubproblemKey) o;
-      return startIndex == other.startIndex
-          && endIndex == other.endIndex
+      return joblist.equals(other.joblist)
           && startTime == other.startTime
           && length == other.length;
     }
 
     @Override
     public int hashCode() { // note: some random computation that results in few collisions.
-      int result = startIndex;
-      result = 31 * result + endIndex;
-      result = 31 * result + startTime;
+      double result = startTime;
       result = 31 * result + length;
-      return result;
+      for(int i = 0 ; i < joblist.size(); i++) {
+          result = 31 * result + joblist.get(i).getIndex();
+      }
+      return (int) result;
     }
 
     public String toString() {
-        return startIndex + ", " + endIndex + ", " + startTime + ", " + length;
+        return ", " + startTime + ", " + length;
     }
 }

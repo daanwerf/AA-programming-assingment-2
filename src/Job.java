@@ -2,10 +2,10 @@ import java.util.Comparator;
 
 public class Job implements Comparable<Job> {
     private int index;
-    private int processingTime;
-    private int deadline;
+    private double processingTime;
+    private double deadline;
 
-    public Job(int index, int processingTime, int deadline) {
+    public Job(int index, double processingTime, double deadline) {
         this.index = index;
         this.processingTime = processingTime;
         this.deadline = deadline;
@@ -15,17 +15,17 @@ public class Job implements Comparable<Job> {
         return index;
     }
 
-    public int getProcessingTime() {
+    public double getProcessingTime() {
         return processingTime;
     }
 
-    public int getDeadline() {
+    public double getDeadline() {
         return deadline;
     }
 
     @Override
     public int compareTo(Job j2) {
-        return Integer.compare(this.getDeadline(), j2.getDeadline());
+        return Double.compare(this.getDeadline(), j2.getDeadline());
     }
 
     @Override

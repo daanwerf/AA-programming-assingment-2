@@ -4,10 +4,10 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.stream.IntStream;
 
-public class Dynamic {
+public class DynamicAlgorithm {
     private static HashMap<SubproblemKey, Schedule> memory = new HashMap<>();
 
-    private static ArrayList<Job> readInstance(String filename){
+    public static ArrayList<Job> readInstance(String filename){
         ArrayList<Job> jobList = new ArrayList<>();
 
         try {
@@ -40,7 +40,7 @@ public class Dynamic {
 
         JobList jobList = new JobList(jobs);
         Schedule s = OptimalSchedule(jobList, 0);
-        System.out.print(s.getTardiness());
+        System.out.print("Total tardiness: " + s.getTardiness());
     }
 
     /**
@@ -49,7 +49,7 @@ public class Dynamic {
      * @param time the time the processing of the jobs starts
      * @return the optimal schedule
      */
-    private static Schedule OptimalSchedule(JobList joblist, int time) {
+    public static Schedule OptimalSchedule(JobList joblist, double time) {
         if(joblist.isEmpty()) {
             return new Schedule(time);
         } else if(joblist.size() == 1) {
@@ -57,47 +57,43 @@ public class Dynamic {
             s.add(joblist.get(0));
             return s;
         } else {
-            SubproblemKey key = new SubproblemKey(joblist.getFirstIndex(), joblist.getLastIndex(), time, joblist.size());
+            SubproblemKey key = new SubproblemKey(joblist, time, joblist.size());
 
             if(memory.containsKey(key)) {
-                System.out.println("Startlist: " + joblist + " startTime: " + time);
-                System.out.println(key.toString());
+                System.out.println("original: " + joblist);
                 Schedule found = memory.get(key);
-                System.out.println("lookup: " + found);
-                System.out.println(found.get(0).getIndex() + ", " + found.get(found.size()-1).getIndex() + ", " + found.getStartingTime() + ", " + found.size());
-                System.out.println("found expected key: " + key);
-                System.out.println("found actual key: " + new SubproblemKey(found.get(0).getIndex(), found.get(found.size()-1).getIndex(), found.getStartingTime(), found.size()).toString());
-                System.out.println("==================");
+                System.out.println("found:"  + found);
                 return found;
             }
 
             int n = joblist.size();
-            int k = getK(joblist);
+            int k = getIndexHighestDeadline(joblist);
             Job jobK = joblist.get(k);
 
             Schedule optimalDeltaScheduleA = new Schedule(0);
             Schedule optimalDeltaScheduleB = new Schedule(0);
             int optimalK = Integer.MIN_VALUE;
-            int lowestTotalDeltaTardiness = Integer.MAX_VALUE;
+            double lowestTotalDeltaTardiness = Double.MAX_VALUE;
 
             int[] deltaOptions = getDeltaOptions(n, k);
-            for(int j = 0; j < deltaOptions.length; j++) {
-                JobList subsetA = makeSubsetA(joblist, j, k);
-                JobList subsetB = makeSubsetB(joblist, n-1, j, k);
+            for(int delta : deltaOptions) {
+                JobList subsetA = makeSubsetA(joblist, delta, k);
+                JobList subsetB = makeSubsetB(joblist, n-1, delta, k);
                 subsetA.remove(k);
 
-                int scheduleBTime = time + getTotalProcessingTime(subsetA) + jobK.getProcessingTime();
+                double scheduleBTime = time + getTotalProcessingTime(subsetA) + jobK.getProcessingTime();
 
                 Schedule optimalScheduleA = OptimalSchedule(subsetA, time);
                 Schedule optimalScheduleB = OptimalSchedule(subsetB, scheduleBTime);
 
-                int totalDeltaTardiness = optimalScheduleA.getTardiness() + Math.max(0, (scheduleBTime - jobK.getDeadline())) + optimalScheduleB.getTardiness();
+                double totalDeltaTardiness = optimalScheduleA.getTardiness() + Math.max(0, (scheduleBTime - jobK.getDeadline())) + optimalScheduleB.getTardiness();
 
                 if (totalDeltaTardiness < lowestTotalDeltaTardiness) {
                     optimalK = k;
                     lowestTotalDeltaTardiness = totalDeltaTardiness;
                     optimalDeltaScheduleA = optimalScheduleA;
                     optimalDeltaScheduleB = optimalScheduleB;
+
                 }
             }
             Schedule optimalSchedule = optimalDeltaScheduleA;
@@ -112,12 +108,10 @@ public class Dynamic {
             optimalSchedule.setNewStartingTime(time);
 
             memory.put(key, optimalSchedule);
-            
+
             return optimalSchedule;
         }
     }
-
-
 
     /**
      * Creates the subset A as described in the paper
@@ -155,9 +149,9 @@ public class Dynamic {
      * @param joblist the list of jobs
      * @return integer k as the index of the job with the highest processing time
      */
-    private static int getK(JobList joblist) {
-        int highest = Integer.MIN_VALUE;
-        int indexHighest = 0;
+    private static int getIndexHighestDeadline(JobList joblist) {
+        double highest = Double.MIN_VALUE;
+        int indexHighest = -1;
         for(int i = 0; i < joblist.size(); i++) {
             if(joblist.get(i).getProcessingTime() > highest) {
                 highest = joblist.get(i).getProcessingTime();
@@ -167,13 +161,25 @@ public class Dynamic {
         return indexHighest;
     }
 
+    private static int getIndexLowestDeadline(JobList joblist) {
+        double lowest = Double.MAX_VALUE;
+        int indexLowest = -1;
+        for(int i = 0; i < joblist.size(); i++) {
+            if(joblist.get(i).getProcessingTime() < lowest) {
+                lowest = joblist.get(i).getProcessingTime();
+                indexLowest = i;
+            }
+        }
+        return indexLowest;
+    }
+
     /**
      * Finds the total processing time of all jobs in the job list
      * @param joblist the list of jobs
      * @return the total processing time of all the jobs in job list
      */
-    private static int getTotalProcessingTime(JobList joblist) {
-        int total = 0;
+    private static double getTotalProcessingTime(JobList joblist) {
+        double total = 0;
         for(int i = 0; i < joblist.size(); i++) {
             total = total + joblist.get(i).getProcessingTime();
         }

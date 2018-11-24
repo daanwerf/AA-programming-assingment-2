@@ -19,6 +19,10 @@ public final class JobList {
         return get(0).getIndex();
     }
 
+    public boolean equals(JobList j2) {
+        return list.equals(j2.list);
+    }
+
     public int size() {
         return list.size();
     }
